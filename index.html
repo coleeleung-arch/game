@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精靈樹林 · 戀愛養成</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+    background: linear-gradient(160deg, #0b1a12 0%, #1a2f22 50%, #0d1f16 100%);
+    min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    padding: 16px; color: #e8f5e9;
+  }
+  .game {
+    max-width: 820px; width: 100%;
+    background: rgba(10, 25, 18, 0.85);
+    border: 1px solid rgba(120, 220, 160, 0.35);
+    border-radius: 28px;
+    box-shadow: 0 0 40px rgba(80, 200, 120, 0.15), 0 20px 50px rgba(0,0,0,0.6);
+    padding: 22px;
+    backdrop-filter: blur(8px);
+  }
+  .top-bar {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
+    background: rgba(5, 20, 12, 0.8);
+    border: 1px solid rgba(100, 200, 140, 0.3);
+    border-radius: 60px; padding: 10px 18px; margin-bottom: 16px;
+  }
+  .stat { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: #b9f0c9; }
+  .stat .val {
+    background: rgba(0,0,0,0.5); padding: 3px 10px; border-radius: 30px;
+    border: 1px solid rgba(120,220,160,0.35); color: #e0ffe8; font-weight: 700; min-width: 42px; text-align: center;
+  }
+  .affection-bar {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .aff-badge {
+    background: rgba(20, 45, 30, 0.7); border: 1px solid rgba(140, 220, 170, 0.35);
+    border-radius: 40px; padding: 6px 14px; font-size: 0.85rem; color: #c8f5d6;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .aff-badge b { color: #a5ffc0; }
+  .scene-img {
+    width: 100%; height: 140px; border-radius: 20px; margin-bottom: 14px;
+    background: rgba(30, 60, 40, 0.6);
+    border: 1px dashed rgba(120, 220, 160, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 3rem; overflow: hidden;
+  }
+  .scene-img img { width: 100%; height: 100%; object-fit: cover; }
+  .story {
+    background: rgba(5, 15, 10, 0.75);
+    border: 1px solid rgba(100, 200, 140, 0.25);
+    border-radius: 22px; padding: 22px; min-height: 130px;
+    margin-bottom: 18px; font-size: 1.05rem; line-height: 1.7;
+    color: #e0ffe8;
+  }
+  .story strong { color: #a5ffc0; }
+  .choices { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .choice-btn {
+    background: rgba(20, 50, 32, 0.85); border: 1.5px solid rgba(120, 220, 160, 0.4);
+    color: #e8fff0; padding: 14px 20px; border-radius: 50px;
+    font-size: 1rem; text-align: left; cursor: pointer; transition: 0.25s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .choice-btn:hover {
+    background: rgba(40, 100, 60, 0.9); border-color: #8dffb0;
+    transform: translateY(-2px); box-shadow: 0 0 18px rgba(100, 255, 150, 0.3);
+  }
+  .choice-btn::before { content: "🌿"; font-size: 1.2rem; }
+  .minigame-area {
+    background: rgba(5, 15, 10, 0.85); border: 1px solid rgba(180, 140, 255, 0.4);
+    border-radius: 22px; padding: 20px; margin-bottom: 16px;
+  }
+  .minigame-area h3 { color: #d8b4ff; margin-bottom: 12px; font-size: 1.1rem; }
+  .mg-option {
+    display: block; width: 100%; margin: 8px 0; padding: 12px 16px;
+    background: rgba(40, 30, 60, 0.8); border: 1px solid rgba(180, 140, 255, 0.35);
+    color: #f0e6ff; border-radius: 30px; cursor: pointer; font-size: 0.95rem; text-align: left;
+    transition: 0.2s;
+  }
+  .mg-option:hover { background: rgba(80, 60, 110, 0.9); border-color: #c8a8ff; }
+  .mg-option.correct { background: rgba(40, 120, 60, 0.9) !important; border-color: #8dffb0; }
+  .mg-option.wrong { background: rgba(120, 30, 30, 0.9) !important; border-color: #ff8d8d; }
+  .mg-input {
+    width: 100%; padding: 12px 16px; border-radius: 30px; border: 1px solid rgba(180,140,255,0.4);
+    background: rgba(0,0,0,0.4); color: #f0e6ff; font-size: 1rem; margin-bottom: 10px;
+  }
+  .mg-btn {
+    background: linear-gradient(135deg, #5a3d7a, #3d5a4a); border: none; color: #fff;
+    padding: 12px 24px; border-radius: 30px; cursor: pointer; font-size: 1rem;
+    font-weight: 600; transition: 0.2s;
+  }
+  .mg-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+  .mg-feedback { margin-top: 10px; font-size: 0.9rem; }
+  .reset-btn {
+    display: block; margin: 0 auto; background: transparent;
+    border: 1.5px solid rgba(120, 220, 160, 0.4); color: #c8f5d6;
+    padding: 10px 28px; border-radius: 40px; cursor: pointer; font-size: 0.9rem;
+    transition: 0.2s;
+  }
+  .reset-btn:hover { background: rgba(80, 200, 120, 0.15); box-shadow: 0 0 15px rgba(100,255,150,0.3); }
+  .divider { text-align: center; color: #6b9a7a; margin-top: 14px; font-size: 0.8rem; letter-spacing: 6px; }
+
+  @media (max-width: 600px) {
+    .game { padding: 14px; border-radius: 20px; }
+    .story { font-size: 0.95rem; padding: 16px; }
+    .choice-btn { font-size: 0.9rem; padding: 12px 16px; }
+    .top-bar { padding: 8px 12px; gap: 6px; }
+    .stat { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+<div class="game">
+  <div class="top-bar">
+    <div class="stat">🔮 魔力 <span class="val" id="s-magic">10</span></div>
+    <div class="stat">💪 體力 <span class="val" id="s-stamina">10</span></div>
+    <div class="stat">🌸 魅力 <span class="val" id="s-charm">10</span></div>
+    <div class="stat">📅 第 <span class="val" id="s-day">1</span> 日</div>
+    <div class="stat">⚡ 行動 <span class="val" id="s-actions">3</span></div>
+  </div>
+
+  <div class="affection-bar">
+    <div class="aff-badge">⚔️ 騎士 · 雷恩 <b id="aff-knight">0</b></div>
+    <div class="aff-badge">🦊 妖狐 · 小狐 <b id="aff-fox">0</b></div>
+  </div>
+
+  <div class="scene-img" id="scene-img">🌲</div>
+  <div class="story" id="story">載入中……</div>
+  <div class="choices" id="choices"></div>
+  <div id="minigame-container"></div>
+  <button class="reset-btn" id="reset">🔄 重新開始</button>
+  <div class="divider">✦ 精靈樹林 ✦ 心動養成 ✦</div>
+</div>
+
+<script>
+(function(){
+  let state = {
+    day: 1, magic: 10, stamina: 10, charm: 10, actions: 3,
+    affection: { knight: 0, fox: 0 },
+    flags: { metKnight: false, metFox: false },
+    ending: null, inMinigame: false, minigameDone: false
+  };
+  let gameOver = false;
+  const $ = id => document.getElementById(id);
+  const storyEl = $('story'), choicesEl = $('choices'), minigameEl = $('minigame-container'), sceneImgEl = $('scene-img');
+
+  function updateUI() {
+    $('s-magic').textContent = state.magic;
+    $('s-stamina').textContent = state.stamina;
+    $('s-charm').textContent = state.charm;
+    $('s-day').textContent = state.day;
+    $('s-actions').textContent = state.actions;
+    $('aff-knight').textContent = state.affection.knight;
+    $('aff-fox').textContent = state.affection.fox;
+  }
+
+  const scenes = {
+    forest:  { emoji: '🌲🍃', name: '精靈樹林' },
+    clearing:{ emoji: '🌿✨', name: '林間空地' },
+    stream:  { emoji: '💧🌳', name: '月光溪流' },
+    shrine:  { emoji: '⛩️🌸', name: '精靈神社' },
+    cave:    { emoji: '🕳️🌙', name: '螢光洞穴' },
+    home:    { emoji: '🏡🍄', name: '樹屋小屋' }
+  };
+  function setScene(key) {
+    const s = scenes[key] || scenes.forest;
+    sceneImgEl.innerHTML = s.emoji;
+  }
+
+  function useAction(n = 1) {
+    if (gameOver || state.inMinigame) return false;
+    state.actions = Math.max(0, state.actions - n);
+    updateUI();
+    if (state.actions <= 0) { endDay(); return true; }
+    return false;
+  }
+
+  function endDay() {
+    state.day++;
+    state.actions = 3;
+    state.stamina = Math.min(20, state.stamina + 1);
+    state.magic = Math.min(20, state.magic + 1);
+    updateUI();
+    if (state.day > 7) { showFinalEnding(); return; }
+    storyEl.innerHTML = `<strong>🌙 第 ${state.day} 日 · 新嘅一日開始</strong><br><br>你喺樹屋醒來，窗外嘅精靈樹林閃住微光。今日有咩打算？`;
+    setScene('home');
+    renderMainChoices();
+  }
+
+  function renderMainChoices() {
+    if (gameOver || state.inMinigame) return;
+    renderChoices([
+      { text: '🌲 去精靈樹林散步（隨機遇人 / 加魅力）', action: () => exploreForest() },
+      { text: '💧 去月光溪流（加魔力 / 可能遇小狐）', action: () => exploreStream() },
+      { text: '⛩️ 去精靈神社（解謎小遊戲 / 加魔力）', action: () => exploreShrine() },
+      { text: '🏡 留喺樹屋休息（加體力）', action: () => restHome() },
+    ]);
+  }
+
+  function renderChoices(list) {
+    choicesEl.innerHTML = '';
+    list.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = c.text;
+      btn.addEventListener('click', () => { if (!gameOver && !state.inMinigame) c.action(); });
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function exploreForest() {
+    if (useAction()) return;
+    setScene('forest');
+    const roll = Math.random();
+    if (roll < 0.45) {
+      if (!state.flags.metKnight) {
+        state.flags.metKnight = true;
+        storyEl.innerHTML = `<strong>⚔️ 林間偶遇</strong><br><br>一個高大嘅身影擋住去路——係精靈王國嘅騎士 <strong>雷恩</strong>。佢一身結實肌肉，銀甲上沾住露水，眼神溫柔：「小姐，呢個樹林有啲危險，要唔要我陪妳行？」`;
+        state.affection.knight += 2; state.charm += 1; updateUI();
+        renderChoices([
+          { text: '「好呀，多謝騎士大人。」（好感+2）', action: () => { state.affection.knight += 2; state.stamina -= 1; updateUI(); storyEl.innerHTML = `雷恩爽朗一笑，護送妳行咗一段路。佢手臂上嘅肌肉線條喺陽光下格外明顯，妳忍唔住偷望多幾眼。`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } },
+          { text: '「唔使喇，我自己得。」（魅力+1）', action: () => { state.charm += 1; updateUI(); storyEl.innerHTML = `雷恩有點失落，但仍然微笑：「咁妳小心啲，有事大叫『雷恩』，我實聽到。」`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } }
+        ]);
+      } else {
+        state.affection.knight += 1; state.stamina = Math.max(0, state.stamina - 1); updateUI();
+        storyEl.innerHTML = `<strong>⚔️ 又遇雷恩</strong><br><br>雷恩喺樹林練劍，汗水沿住肌肉流落嚟。佢見到妳，即刻收劍：「妳又嚟散步？一齊啦！」`;
+        renderChoices([{ text: '🌿 一齊行（好感+1）', action: () => { state.affection.knight += 1; state.charm += 1; updateUI(); renderMainChoices(); setScene('home'); } }]);
+      }
+    } else if (roll < 0.7 && !state.flags.metFox) {
+      state.flags.metFox = true; state.affection.fox += 2; state.charm += 1; updateUI();
+      storyEl.innerHTML = `<strong>🦊 草叢中嘅身影</strong><br><br>一隻銀白色嘅小妖狐喺草叢探頭出嚟，樣貌柔弱乖巧，耳仔微微顫抖：「妳……妳係人類？我……我唔會害人㗎……」`;
+      renderChoices([
+        { text: '「你好可愛呀，叫咩名？」（好感+2）', action: () => { state.affection.fox += 2; state.charm += 1; updateUI(); storyEl.innerHTML = `小狐臉紅：「我……我叫小狐。多謝妳唔驚我……」佢嘅尾巴開心咁搖吓搖吓。`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } },
+        { text: '「你係妖狐？會唔會食人㗎？」（好感-1）', action: () => { state.affection.fox = Math.max(0, state.affection.fox - 1); updateUI(); storyEl.innerHTML = `小狐眼泛淚光：「我……我唔食人㗎……」說完就縮返入草叢。妳有啲後悔。`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } }
+      ]);
+    } else {
+      state.charm += 1; state.stamina = Math.max(0, state.stamina - 1); updateUI();
+      storyEl.innerHTML = `你喺精靈樹林散步，吸收咗森林嘅靈氣。魅力 +1，體力 -1。`;
+      renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]);
+    }
+  }
+
+  function exploreStream() {
+    if (useAction()) return;
+    setScene('stream');
+    if (Math.random() < 0.5) {
+      state.affection.fox += 2; state.magic += 1; updateUI();
+      storyEl.innerHTML = `<strong>🦊 月光溪流嘅小狐</strong><br><br>小狐坐喺溪邊，用尾巴撥水，見到妳即刻縮埋：「啊……妳又嚟啦……」佢嘅耳仔軟軟咁垂低。`;
+      renderChoices([
+        { text: '「我嚟陪你傾偈。」（好感+2）', action: () => { state.affection.fox += 2; state.magic += 1; updateUI(); storyEl.innerHTML = `小狐好開心，同妳講咗好多精靈世界嘅秘密。佢柔弱嘅聲線令妳心都軟埋。`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } },
+        { text: '「你個樣真係好乖巧。」（魅力+1）', action: () => { state.charm += 1; updateUI(); storyEl.innerHTML = `小狐塊面紅到耳仔根：「邊……邊有呀……」`; renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]); } }
+      ]);
+    } else {
+      state.magic += 2; state.stamina = Math.max(0, state.stamina - 1); updateUI();
+      storyEl.innerHTML = `你喺月光溪流冥想，魔力 +2，體力 -1。溪水映住月光，好舒服。`;
+      renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]);
+    }
+  }
+
+  function exploreShrine() {
+    if (useAction()) return;
+    setScene('shrine');
+    startMinigame();
+  }
+
+  function restHome() {
+    if (useAction()) return;
+    setScene('home');
+    state.stamina = Math.min(20, state.stamina + 3);
+    state.magic = Math.min(20, state.magic + 1);
+    updateUI();
+    storyEl.innerHTML = `你喺樹屋休息，體力 +3，魔力 +1。窗外嘅精靈樹林好安靜。`;
+    renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]);
+  }
+
+  function startMinigame() {
+    state.inMinigame = true; state.minigameDone = false;
+    minigameEl.innerHTML = ''; choicesEl.innerHTML = '';
+    const type = Math.floor(Math.random() * 3);
+    if (type === 0) minigameRiddle();
+    else if (type === 1) minigameMemory();
+    else minigameLogic();
+  }
+
+  function finishMinigame(success) {
+    state.inMinigame = false;
+    if (success) { state.magic += 2; state.charm += 1; updateUI(); storyEl.innerHTML = `<strong>✨ 小遊戲成功！</strong><br><br>精靈神社嘅守護精靈讚賞你嘅智慧，魔力 +2，魅力 +1。`; }
+    else { state.magic += 1; updateUI(); storyEl.innerHTML = `<strong>🌙 小遊戲結束</strong><br><br>雖然唔係全對，但你都學到嘢。魔力 +1。`; }
+    minigameEl.innerHTML = '';
+    renderChoices([{ text: '🌿 返去主選單', action: () => { renderMainChoices(); setScene('home'); } }]);
+  }
+
+  function minigameRiddle() {
+    const riddles = [
+      { q: '精靈世界入面，有一種嘢「有葉唔係樹，有花唔係草，晚上會發光」，係咩？', opts: ['螢光菇', '月亮花', '星星葉', '精靈燈'], ans: '螢光菇' },
+      { q: '「日行千里，夜行八百，唔食草唔飲水，最鍾意月光」——猜一精靈生物', opts: ['妖狐', '獨角獸', '月光鹿', '風精靈'], ans: '月光鹿' },
+      { q: '精靈神社入面，有三個門：金、銀、木。守護精靈話「真話喺木門後面」，但金門寫住「木門講大話」。邊個門先啱？', opts: ['金門', '銀門', '木門', '全部都唔啱'], ans: '木門' }
+    ];
+    const r = riddles[Math.floor(Math.random() * riddles.length)];
+    let answered = false;
+    minigameEl.innerHTML = `<div class="minigame-area"><h3>🧩 精靈猜謎</h3><p style="margin-bottom:12px;">${r.q}</p><div id="mg-opts"></div><div class="mg-feedback" id="mg-fb"></div></div>`;
+    const optsEl = document.getElementById('mg-opts');
+    r.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'mg-option'; btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (answered) return; answered = true;
+        const correct = opt === r.ans;
+        btn.classList.add(correct ? 'correct' : 'wrong');
+        if (!correct) [...optsEl.children].forEach(b => { if (b.textContent === r.ans) b.classList.add('correct'); });
+        document.getElementById('mg-fb').innerHTML = correct ? '✅ 答啱咗！你嘅智慧得到精靈認可。' : `❌ 答錯咗。正確答案係「${r.ans}」。`;
+        setTimeout(() => finishMinigame(correct), 1200);
+      });
+      optsEl.appendChild(btn);
+    });
+  }
+
+  function minigameMemory() {
+    const symbols = ['🌙', '⭐', '🍄', '🌿'];
+    const deck = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+    let flipped = [], matched = 0, lock = false;
+    minigameEl.innerHTML = `<div class="minigame-area"><h3>🧠 精靈記憶配對</h3><p style="margin-bottom:12px;">翻開兩張相同嘅卡牌，配對成功！</p><div id="mg-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div></div>`;
+    const grid = document.getElementById('mg-grid');
+    deck.forEach((sym) => {
+      const card = document.createElement('button');
+      card.className = 'mg-option'; card.style.height = '70px'; card.style.fontSize = '1.6rem'; card.style.textAlign = 'center';
+      card.textContent = '❓'; card.dataset.sym = sym; card.dataset.flipped = 'false';
+      card.addEventListener('click', () => {
+        if (lock || card.dataset.flipped === 'true' || matched >= 4) return;
+        card.textContent = sym; card.dataset.flipped = 'true'; card.style.background = 'rgba(80, 60, 110, 0.9)';
+        flipped.push(card);
+        if (flipped.length === 2) {
+          lock = true;
+          const [a, b] = flipped;
+          if (a.dataset.sym === b.dataset.sym) {
+            matched++; a.style.background = 'rgba(40,120,60,0.9)'; b.style.background = 'rgba(40,120,60,0.9)';
+            flipped = []; lock = false;
+            if (matched >= 4) setTimeout(() => finishMinigame(true), 800);
+          } else {
+            setTimeout(() => {
+              a.textContent = '❓'; b.textContent = '❓'; a.style.background = ''; b.style.background = '';
+              a.dataset.flipped = 'false'; b.dataset.flipped = 'false'; flipped = []; lock = false;
+            }, 800);
+          }
+        }
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  function minigameLogic() {
+    const puzzles = [
+      { q: '精靈樹林入面：雷恩企喺小狐左邊，小狐企喺精靈左邊。邊個企最右邊？', opts: ['雷恩', '小狐', '精靈', '一樣'], ans: '精靈' },
+      { q: '如果「所有妖狐都怕水」，而小狐係妖狐，咁以下邊句一定啱？', opts: ['小狐怕水', '小狐唔怕水', '小狐鍾意水', '無法判斷'], ans: '小狐怕水' },
+      { q: '精靈神社有 3 盞燈：紅、綠、藍。紅燈亮時綠燈一定熄。而家綠燈亮住，咁紅燈？', opts: ['一定亮', '一定熄', '可能亮', '無法判斷'], ans: '一定熄' }
+    ];
+    const p = puzzles[Math.floor(Math.random() * puzzles.length)];
+    let answered = false;
+    minigameEl.innerHTML = `<div class="minigame-area"><h3>🔍 精靈邏輯題</h3><p style="margin-bottom:12px;">${p.q}</p><div id="mg-opts"></div><div class="mg-feedback" id="mg-fb"></div></div>`;
+    const optsEl = document.getElementById('mg-opts');
+    p.opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'mg-option'; btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (answered) return; answered = true;
+        const correct = opt === p.ans;
+        btn.classList.add(correct ? 'correct' : 'wrong');
+        if (!correct) [...optsEl.children].forEach(b => { if (b.textContent === p.ans) b.classList.add('correct'); });
+        document.getElementById('mg-fb').innerHTML = correct ? '✅ 邏輯正確！' : `❌ 正確答案係「${p.ans}」。`;
+        setTimeout(() => finishMinigame(correct), 1200);
+      });
+      optsEl.appendChild(btn);
+    });
+  }
+
+  function showFinalEnding() {
+    gameOver = true; state.inMinigame = false; minigameEl.innerHTML = ''; choicesEl.innerHTML = ''; setScene('shrine');
+    const k = state.affection.knight, f = state.affection.fox;
+    let ending = '';
+    if (k >= 8 && f < 5) ending = `<strong>⚔️ 結局：騎士嘅守護</strong><br><br>第七日，雷恩喺精靈神社前單膝跪低：「我發誓，以後用我所有嘅力量守護妳。」你望住佢結實嘅肩膀，安心咁點頭。精靈樹林嘅花瓣隨風飄落，見證呢份溫柔而強大嘅愛。`;
+    else if (f >= 8 && k < 5) ending = `<strong>🦊 結局：妖狐嘅真心</strong><br><br>小狐鼓起勇氣，用柔弱嘅聲線講：「我……我知我唔夠強，但我會用盡全力對妳好。」你摸住佢軟軟嘅耳仔，笑著話：「你已經夠好喇。」月光溪流映住兩人嘅身影。`;
+    else if (k >= 6 && f >= 6) ending = `<strong>💞 結局：兩難嘅心動</strong><br><br>雷恩同小狐都向你表白。雷恩嘅肌肉同溫柔令你心動，小狐嘅乖巧同真心令你心軟。你未揀到，但你知道，無論揀邊個，呢個精靈樹林都會記住呢段美好嘅時光。`;
+    else if (k >= 3 || f >= 3) ending = `<strong>🌿 結局：曖昧嘅友誼</strong><br><br>你同佢哋都成為好朋友。雖然未發展成戀人，但精靈樹林入面嘅每一段回憶都好珍貴。或者，下一段故事先係真正嘅開始。`;
+    else ending = `<strong>🍃 結局：獨自嘅精靈旅程</strong><br><br>你一個人喺精靈樹林行咗七日，學識咗好多魔法同智慧。雖然冇愛情，但你搵到屬於自己嘅平靜。精靈們都話：「你已經好叻喇。」`;
+    storyEl.innerHTML = `🌙 第七日 · 故事結局<br><br>${ending}<br><br>✨ 感謝遊玩！`;
+    updateUI();
+  }
+
+  function resetGame() {
+    state = { day: 1, magic: 10, stamina: 10, charm: 10, actions: 3, affection: { knight: 0, fox: 0 }, flags: { metKnight: false, metFox: false }, ending: null, inMinigame: false, minigameDone: false };
+    gameOver = false; minigameEl.innerHTML = ''; updateUI(); setScene('home');
+    storyEl.innerHTML = `<strong>🌲 精靈樹林 · 第一日</strong><br><br>你係一個誤入精靈世界嘅人類，醒喺一間樹屋入面。窗外嘅精靈樹林閃住微光，遠處好似有把溫柔嘅男聲……<br><br>今日有咩打算？`;
+    renderMainChoices();
+  }
+
+  resetGame();
+  $('reset').addEventListener('click', resetGame);
+})();
+</script>
+</body>
+</html>
